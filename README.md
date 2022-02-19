@@ -7,10 +7,10 @@ Project for _humidity_ and _temperature_ datalogger using
 
 For this project we'll use the following hardware:
 
-- a RaspberryPi Zero W computer (should work on any RaspberryPi);
+- a **RaspberryPi Zero W** computer (should work on any RaspberryPi);
 - a **DHT22** humidity and temperature sensor with PCB (which allows us to
   avoid soldering the 10 kΩ pullup resistor required);
-- a powerbank to power the RaspberryPi outdoor;
+- a powerbank to power the RaspberryPi outdoor.
 
 ## Software
 
