@@ -101,8 +101,8 @@ def main() -> None:
         "--measures",
         type=int,
         metavar=("<num>"),
-        default=10,
-        help="number of measures to average the value (default: 10)",
+        default=11,
+        help="number of measures to average the value (default: 11)",
     )
     args = argparser.parse_args()
     if args.interval is not None and args.interval <= MIN_INTERVAL:
