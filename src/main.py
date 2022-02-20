@@ -28,11 +28,13 @@ from adafruit_dht import DHT22
 from argparse import ArgumentParser
 from board import D4
 from datetime import datetime
-from os.path import expanduser
+from os.path import expanduser, isdir, join
+from os import mkdir
 from sys import exit
 from time import sleep
 
 MIN_INTERVAL = 2
+OUTPUT_DIRECTORY = expanduser("~/datalogger")
 
 # you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
 # This may be necessary on a Linux single board computer like the Raspberry Pi,
@@ -44,7 +46,7 @@ dhtDevice = DHT22(D4)
 
 
 def log(error: Exception) -> None:
-    with open(expanduser("~/datalogger.log", "a+")) as logfile:
+    with open(join(OUTPUT_DIRECTORY, "datalogger.log"), "a+") as logfile:
         logfile.write(f"{error}\n")
 
 
@@ -80,7 +82,7 @@ def measure(measures: int) -> None:
         humidity += hum_read
     temperature = round(temperature / measures, 1)
     humidity = round(humidity / measures, 1)
-    with open(expanduser(f"~/{date}"), "a+") as data_file:
+    with open(join(OUTPUT_DIRECTORY, date), "a+") as data_file:
         data_file.write(f"{date},{time},{temperature},{humidity}\n")
 
 
@@ -109,6 +111,9 @@ def main() -> None:
         exit("WARNING: Please insert odd integer")
     if args.measures * MIN_INTERVAL >= args.interval:
         exit("Incompatible parameters")
+    # check if ~/datalogger directory exists, if not create it
+    if not isdir(OUTPUT_DIRECTORY):
+        mkdir(OUTPUT_DIRECTORY)
     # main loop
     while True:
         try:
