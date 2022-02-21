@@ -59,11 +59,15 @@ def measure(measures: int, quiet: bool) -> None:
         humidity += hum_read
     temperature = round(temperature / measures, 1)
     humidity = round(humidity / measures, 1)
-    string = f"{date},{time},{temperature},{humidity}\n"
     if not quiet:
-        print(string)
+        print(
+            f"date: {date}; "
+            f"time:{time}; "
+            f"temperature(celsius): {temperature}; "
+            f"humidity(%): {humidity}"
+        )
     with open(join(OUTPUT_DIRECTORY, date), "a+") as data_file:
-        data_file.write(string)
+        data_file.write(f"{date},{time},{temperature},{humidity}\n")
 
 
 def main() -> None:
