@@ -50,17 +50,21 @@ def log(error: Exception) -> None:
         logfile.write(f"{error}\n")
 
 
-def read_temp_hum() -> str:
+def read_temp_hum(quiet: bool) -> str:
     try:
         # get temperature in degrees Celsius
         temperature = dhtDevice.temperature
         humidity = dhtDevice.humidity
     except RuntimeError as error:
+        if not quiet:
+            print(error)
         log(error)
         # TODO: try recursive call
         sleep(2)
         read_temp_hum()
     except Exception as error:
+        if not quiet:
+            print(error)
         # exiting program
         log(error)
         dhtDevice.exit()
@@ -69,21 +73,24 @@ def read_temp_hum() -> str:
     return temperature, humidity
 
 
-def measure(measures: int) -> None:
+def measure(measures: int, quiet: bool) -> None:
     # average of humidity and temperature on "measures" number of measures
     # time is stored at the central measure
     humidity = 0
     temperature = 0
     for i in range(measures):
-        temp_read, hum_read = read_temp_hum()
+        temp_read, hum_read = read_temp_hum(quiet=quiet)
         if i == int(measures / 2):
             date, time = str(datetime.now()).split(".")[0].split(" ")
         temperature += temp_read
         humidity += hum_read
     temperature = round(temperature / measures, 1)
     humidity = round(humidity / measures, 1)
+    string = f"{date},{time},{temperature},{humidity}\n"
+    if not quiet:
+        print(string)
     with open(join(OUTPUT_DIRECTORY, date), "a+") as data_file:
-        data_file.write(f"{date},{time},{temperature},{humidity}\n")
+        data_file.write(string)
 
 
 def main() -> None:
@@ -104,6 +111,12 @@ def main() -> None:
         default=11,
         help="number of measures to average the value (default: 11)",
     )
+    argparser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="suppresses terminal output (for use in scripts)",
+    )
     args = argparser.parse_args()
     if args.interval is not None and args.interval <= MIN_INTERVAL:
         exit(f"ERROR: Interval must be grater than {MIN_INTERVAL}")
@@ -117,7 +130,7 @@ def main() -> None:
     # main loop
     while True:
         try:
-            measure(measures=args.measures)
+            measure(measures=args.measures, quiet=args.quiet)
             sleep(args.interval)
         except KeyboardInterrupt:
             exit()
