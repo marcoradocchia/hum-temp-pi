@@ -39,7 +39,7 @@ GPIO_PIN = 4
 
 def read_temp_hum() -> str:
     humidity, temperature = read_retry(DHT22, GPIO_PIN)
-    if humidity is None and temperature is not None:
+    if humidity is not None and temperature is not None:
         return humidity, temperature
     # wait 2 seconds and try a recursive call
     sleep(2)
