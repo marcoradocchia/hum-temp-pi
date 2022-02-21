@@ -24,9 +24,8 @@
 #   * adafruit-circuitpython-dht
 # - libgpiod2
 
-from adafruit_dht import DHT22
+from Adafruit_DHT import DHT22, read_retry
 from argparse import ArgumentParser
-from board import D4
 from datetime import datetime
 from os.path import expanduser, isdir, join
 from os import mkdir
@@ -35,42 +34,16 @@ from time import sleep
 
 MIN_INTERVAL = 2
 OUTPUT_DIRECTORY = expanduser("~/datalogger")
-
-# you can pass DHT22 use_pulseio=False if you wouldn't like to use pulseio.
-# This may be necessary on a Linux single board computer like the Raspberry Pi,
-# but it will not work in CircuitPython.
-# dhtDevice = DHT22(D4, use_pulseio=False)
-
-# Initial the dht device, with data pin connected to:
-dhtDevice = DHT22(D4)
+GPIO_PIN = 4
 
 
-def log(error: Exception) -> None:
-    with open(join(OUTPUT_DIRECTORY, "datalogger.log"), "a+") as logfile:
-        logfile.write(f"{error}\n")
-
-
-def read_temp_hum(quiet: bool) -> str:
-    try:
-        # get temperature in degrees Celsius
-        temperature = dhtDevice.temperature
-        humidity = dhtDevice.humidity
-    except RuntimeError as error:
-        if not quiet:
-            print(error)
-        log(error)
-        # TODO: try recursive call
-        sleep(2)
-        read_temp_hum(quiet=quiet)
-    except Exception as error:
-        if not quiet:
-            print(error)
-        # exiting program
-        log(error)
-        dhtDevice.exit()
-        raise error
+def read_temp_hum() -> str:
+    humidity, temperature = read_retry(DHT22, GPIO_PIN)
+    if humidity is None and temperature is not None:
+        return humidity, temperature
+    # wait 2 seconds and try a recursive call
     sleep(2)
-    return temperature, humidity
+    read_temp_hum()
 
 
 def measure(measures: int, quiet: bool) -> None:
@@ -79,7 +52,7 @@ def measure(measures: int, quiet: bool) -> None:
     humidity = 0
     temperature = 0
     for i in range(measures):
-        temp_read, hum_read = read_temp_hum(quiet=quiet)
+        hum_read, temp_read = read_temp_hum()
         if i == int(measures / 2):
             date, time = str(datetime.now()).split(".")[0].split(" ")
         temperature += temp_read
