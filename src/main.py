@@ -61,7 +61,7 @@ def read_temp_hum(quiet: bool) -> str:
         log(error)
         # TODO: try recursive call
         sleep(2)
-        read_temp_hum()
+        read_temp_hum(quiet=quiet)
     except Exception as error:
         if not quiet:
             print(error)
