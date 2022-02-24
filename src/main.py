@@ -31,6 +31,7 @@ from os.path import expanduser, isdir, join
 from os import mkdir
 from sys import exit
 from time import sleep
+from threading import Thread
 
 MIN_INTERVAL = 2
 OUTPUT_DIRECTORY = expanduser("~/datalogger")
@@ -107,7 +108,8 @@ def main() -> None:
     # main loop
     while True:
         try:
-            measure(measures=args.measures, quiet=args.quiet)
+            thread = Thread(target=measure, args=[args.measures, args.quiet])
+            thread.start()
             sleep(args.interval)
         except KeyboardInterrupt:
             exit()
