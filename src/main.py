@@ -30,8 +30,7 @@ from datetime import datetime
 from os.path import expanduser, isdir, join
 from os import mkdir
 from sys import exit
-from time import sleep
-from threading import Thread
+from time import sleep, time
 
 MIN_INTERVAL = 2
 OUTPUT_DIRECTORY = expanduser("~/datalogger")
@@ -108,9 +107,10 @@ def main() -> None:
     # main loop
     while True:
         try:
-            thread = Thread(target=measure, args=[args.measures, args.quiet])
-            thread.start()
-            sleep(args.interval)
+            time_start = time()
+            measure(measures=args.measures, quiet=args.quiet)
+            elapsed_time = time() - time_start
+            sleep(args.interval - elapsed_time)
         except KeyboardInterrupt:
             exit()
 
