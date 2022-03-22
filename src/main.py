@@ -45,7 +45,7 @@ def read_temp_hum(pin: int) -> str:
     read_temp_hum()
 
 
-def measure(measures: int, quiet: bool, pin: int) -> None:
+def measure(measures: int, quiet: bool, pin: int, id: str) -> None:
     # average of humidity and temperature on "measures" number of measures
     # time is stored at the central measure
     humidity = 0
@@ -65,7 +65,7 @@ def measure(measures: int, quiet: bool, pin: int) -> None:
             f"temperature(celsius): {temperature}; "
             f"humidity(%): {humidity}"
         )
-    with open(join(OUTPUT_DIRECTORY, date), "a+") as data_file:
+    with open(join(OUTPUT_DIRECTORY, f"{date}-{id}"), "a+") as data_file:
         data_file.write(f"{date},{time},{temperature},{humidity}\n")
 
 
@@ -101,6 +101,14 @@ def main() -> None:
         metavar=("<pin>"),
         help="GPIO pin",
     )
+    argparser.add_argument(
+        "-id",
+        "--identifier",
+        required=True,
+        type=str,
+        metavar=("<id>"),
+        help="filename identifier",
+    )
     args = argparser.parse_args()
     if args.interval is not None and args.interval <= MIN_INTERVAL:
         exit(f"ERROR: Interval must be grater than {MIN_INTERVAL}")
@@ -115,7 +123,12 @@ def main() -> None:
     while True:
         try:
             time_start = time()
-            measure(measures=args.measures, quiet=args.quiet, pin=args.pin)
+            measure(
+                measures=args.measures,
+                quiet=args.quiet,
+                pin=args.pin,
+                id=args.identifier,
+            )
             elapsed_time = time() - time_start
             sleep(args.interval - elapsed_time)
         except KeyboardInterrupt:
