@@ -34,11 +34,10 @@ from time import sleep, time
 
 MIN_INTERVAL = 2
 OUTPUT_DIRECTORY = expanduser("~/datalogger")
-GPIO_PIN = 4
 
 
-def read_temp_hum() -> str:
-    humidity, temperature = read_retry(DHT22, GPIO_PIN)
+def read_temp_hum(pin: int) -> str:
+    humidity, temperature = read_retry(DHT22, pin)
     if humidity is not None and temperature is not None:
         return humidity, temperature
     # wait 2 seconds and try a recursive call
@@ -46,13 +45,13 @@ def read_temp_hum() -> str:
     read_temp_hum()
 
 
-def measure(measures: int, quiet: bool) -> None:
+def measure(measures: int, quiet: bool, pin: int) -> None:
     # average of humidity and temperature on "measures" number of measures
     # time is stored at the central measure
     humidity = 0
     temperature = 0
     for i in range(measures):
-        hum_read, temp_read = read_temp_hum()
+        hum_read, temp_read = read_temp_hum(pin=pin)
         if i == int(measures / 2):
             date, time = str(datetime.now()).split(".")[0].split(" ")
         temperature += temp_read
@@ -94,6 +93,9 @@ def main() -> None:
         action="store_true",
         help="suppresses terminal output (for use in scripts)",
     )
+    argparser.add_argument(
+        "-p", "--pin", type=int, metavar=("<pin>"), help="GPIO pin"
+    )
     args = argparser.parse_args()
     if args.interval is not None and args.interval <= MIN_INTERVAL:
         exit(f"ERROR: Interval must be grater than {MIN_INTERVAL}")
@@ -108,7 +110,7 @@ def main() -> None:
     while True:
         try:
             time_start = time()
-            measure(measures=args.measures, quiet=args.quiet)
+            measure(measures=args.measures, quiet=args.quiet, pin=args.pin)
             elapsed_time = time() - time_start
             sleep(args.interval - elapsed_time)
         except KeyboardInterrupt:
