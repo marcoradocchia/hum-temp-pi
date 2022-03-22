@@ -41,7 +41,7 @@ def read_temp_hum(pin: int) -> str:
     if humidity is not None and temperature is not None:
         return humidity, temperature
     # wait 2 seconds and try a recursive call
-    sleep(2)
+    sleep(1)
     read_temp_hum()
 
 
@@ -94,7 +94,12 @@ def main() -> None:
         help="suppresses terminal output (for use in scripts)",
     )
     argparser.add_argument(
-        "-p", "--pin", type=int, metavar=("<pin>"), help="GPIO pin"
+        "-p",
+        "--pin",
+        required=True,
+        type=int,
+        metavar=("<pin>"),
+        help="GPIO pin",
     )
     args = argparser.parse_args()
     if args.interval is not None and args.interval <= MIN_INTERVAL:
